@@ -3,18 +3,29 @@ var five  = require("johnny-five"),
     fs    = require('fs'),
     png   = require('png-js'),
     board, 
+    shiftRegister,
     mirrorMotor,
-    image = null;
+    imagePixels = null;
 
 //The number of physical lasers we have
 //Also the number of lines we project
 var NUM_LASERS = 16;
 
-board = new five.Board();
+//Flag controlling lasers
+var lasersEnabled = false;
 
-board.on("ready", function() {
+five.Board().on("ready", function() {
 
 	console.log("Board ready!");
+
+  shiftRegister = new five.ShiftRegister({
+    pins: {
+      data: 11,
+      clock: 12,
+      latch: 8
+    }
+  });
+
 
   //The motor that the mirror is attached to
   mirrorMotor = new five.Motor({
@@ -24,17 +35,20 @@ board.on("ready", function() {
   this.repl.inject({
     loadImage : loadImage,
     startMotor : startMotor,
+    toggleLasers : toggleLasers
   });
+  
+  this.loop(100, function() {
 
-  // event handlers on start and stop
-  mirrorMotor.on("start", function( err, timestamp ) {
-    console.log( "started", timestamp );
-  }); 
+    if(lasersEnabled){
 
-  mirrorMotor.on("stop", function( err, timestamp ) {
-    console.log( "stopped", timestamp );
+      if(imagePixels!=null){
+
+
+
+      }
+    }
   });
-
 });
 
 //Load the image
@@ -45,13 +59,21 @@ var loadImage = function(filename){
   console.log("Loading : " + path);
 
   try {
-    image = png.load(path);
+
+    var image = png.load(path);
+
+    image.decode(function(pixels){
+
+      imagePixels = pixels;
+    });
+
   }
   catch (e) {
     console.log("Error in loadImage : " + e);
   }
 };
 
+//Starts the motor at the given speed
 var startMotor = function(speed){
 
   if(speed < 0 || speed > 255){
@@ -60,3 +82,12 @@ var startMotor = function(speed){
 
   mirrorMotor.start(speed);
 };
+
+//Enabled the lasers
+var toggleLasers = function(){
+
+  lasersEnabled = !lasersEnabled;
+};
+
+
+
