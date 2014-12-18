@@ -10,20 +10,20 @@ var five  = require("johnny-five"),
 //Also the number of lines we project
 var NUM_LASERS = 16;
 
-
 board = new five.Board();
 
 board.on("ready", function() {
 
 	console.log("Board ready!");
 
-  this.repl.inject({
-    loadImage : loadImage
-  });
-
   //The motor that the mirror is attached to
   mirrorMotor = new five.Motor({
     pin: 3
+  });
+
+  this.repl.inject({
+    loadImage : loadImage,
+    startMotor : startMotor,
   });
 
   // event handlers on start and stop
@@ -50,4 +50,13 @@ var loadImage = function(filename){
   catch (e) {
     console.log("Error in loadImage : " + e);
   }
+};
+
+var startMotor = function(speed){
+
+  if(speed < 0 || speed > 255){
+    console.log("Error in startMotor : Entered speed is incorrect, valid range is 0-255");
+  }
+
+  mirrorMotor.start(speed);
 };
